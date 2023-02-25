@@ -225,6 +225,8 @@ float getBatteryVoltage() {
 // === MAIN SETUP =============================================================
 // ============================================================================
 void setup() {
+
+    digitalWrite(22, HIGH);
     // Start the primary serial connection
     Serial.begin(serialBaud);
 
