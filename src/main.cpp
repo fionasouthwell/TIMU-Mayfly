@@ -35,26 +35,21 @@ const int8_t sensorPowerPin = 22;  // MCU pin controlling main sensor power
 
 // === MODEM SETUP ============================================================
 // ============================================================================
-#include <modems/DigiXBeeLTEBypass.h>
-HardwareSerial &modemSerial = Serial1;  // Use hardware serial if possible
-const int32_t modemBaud = 9600;         // All XBee's use 9600 by default
-const int8_t modemVccPin = 18;          // MCU pin controlling modem power
-const int8_t modemStatusPin = 19;       // MCU pin used to read modem status
-// NOTE:  If possible, use the `STATUS/SLEEP_not` (XBee pin 13) for status, but
-// the CTS pin can also be used if necessary
-const bool useCTSforStatus = true;  // Flag to use the CTS pin for status
-const int8_t modemResetPin = A5;    // MCU pin connected to modem reset pin
+#include <modems/SIMComSIM7080.h>
+
+HardwareSerial &modemSerial = Serial1; 
+const int32_t modemBaud = 9600;  //  SIM7080 does auto-bauding by default
+const int8_t modemVccPin = 18;  
+const int8_t modemStatusPin = 19; 
 const int8_t modemSleepRqPin = 23;  // MCU pin for modem sleep/wake request
-const int8_t modemLEDPin = redLED;  // MCU pxin connected an LED to show modem
-                                    // status
+const int8_t modemLEDPin = redLED;  // MCU pin connected an LED to show modem status
 
 const char *apn = "hologram";  // The APN for the gprs connection
 
-DigiXBeeLTEBypass modemXBLTEB(&modemSerial, modemVccPin, modemStatusPin,
-                              useCTSforStatus, modemResetPin, modemSleepRqPin,
-                              apn);
-// Create an extra reference to the modem by a generic name
-DigiXBeeLTEBypass modem = modemXBLTEB;
+// Create the modem object
+SIMComSIM7080 modem7080(&modemSerial, modemVccPin, modemStatusPin, modemSleepRqPin, apn);
+SIMComSIM7080 modem = modem7080;
+
 
 // === SENSOR SETUP ===========================================================
 // ============================================================================
@@ -178,11 +173,6 @@ Variable *variableList[] = {
 // UUIDs as taken from the MMW website. The order matters and must match the variableList!
 // For security reasons these UUIDS *probably* shouldn't be made public
 
-
-
-
-
-
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
 VariableArray varArray(variableCount, variableList, UUIDs);
@@ -274,6 +264,23 @@ void setup() {
         Serial.println(F("Setting up sensors..."));
         varArray.setupSensors();
     }
+
+    /** Start [setup_sim7080] */
+    modem.setModemWakeLevel(HIGH);   // ModuleFun Bee inverts the signal
+    modem.setModemResetLevel(HIGH);  // ModuleFun Bee inverts the signal
+    Serial.println(F("Waking modem and setting Cellular Carrier Options..."));
+    modem.modemWake();  // NOTE:  This will also set up the modem
+    modem.gsmModem.setBaud(modemBaud);   // Make sure we're *NOT* auto-bauding!
+    modem.gsmModem.setNetworkMode(38);   // set to LTE only
+                                         // 2 Automatic
+                                         // 13 GSM only
+                                         // 38 LTE only
+                                         // 51 GSM and LTE only
+    modem.gsmModem.setPreferredMode(1);  // set to CAT-M
+                                         // 1 CAT-M
+                                         // 2 NB-IoT
+                                         // 3 CAT-M and NB-IoT
+    /** End [setup_sim7080] */
 
     // Sync the clock if it isn't valid or we have battery to spare
     if (getBatteryVoltage() > 3.55 || !dataLogger.isRTCSane()) {
