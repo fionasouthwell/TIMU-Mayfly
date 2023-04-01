@@ -50,8 +50,8 @@ ADDRESS SerialHandler::parse_sensor() {
     if (!strcmp(sensor, "ph")) {
         return EZO_PH;
     }
-    if (!strcmp(sensor, "cond")) {
-        return EZO_COND;
+    if (!strcmp(sensor, "ec")) {
+        return EZO_EC;
     }
     if (!strcmp(sensor, "rtd")) {
         return EZO_RTD;

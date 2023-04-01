@@ -14,7 +14,7 @@ typedef enum ADDRESS{
     EZO_DO = 97,
     EZO_ORP = 98,
     EZO_PH = 99,
-    EZO_COND = 100,
+    EZO_EC = 100,
     EZO_RTD = 102
 } ADDRESS;
 
