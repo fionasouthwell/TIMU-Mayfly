@@ -12,6 +12,7 @@
 #include <PINS.h>
 #include <TIMU-Mayfly.h>
 #include <UUIDs.h>
+#include <manual_mode.h>
 
 // === DATA LOGGING OPTIONS ===================================================
 // ============================================================================
@@ -23,7 +24,24 @@ const uint8_t loggingInterval = 5;
 // Your logger's timezone.
 const int8_t timeZone = -4;  // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
-const int32_t serialBaud = 115200;  // Baud rate for debugging
+// const int32_t serialBaud = 115200;  // Baud rate for debugging
+
+// === CALIBRATOR SETUP
+//=====================
+//#define BUFFER_SIZE 32
+// make sure serial monitor baud rate is set the same!
+const int32_t serialBaud = 57600;
+
+char rx_buffer[32];
+uint8_t bytes_read = 0;
+bool serial_flag = false;   // true when data in serial buffer
+//char *sensor;               // buffer for sensor string
+//char *command;              // buffer for command string
+//uint8_t address = 0;        // sensor address number
+//uint8_t response_code = 0;  // first byte sent from ezo
+//char tx_buffer[BUFFER_SIZE];
+//char tx_byte;
+//uint8_t tx_buffer_index = 0;
 
 // === MODEM SETUP ============================================================
 // ============================================================================
@@ -121,12 +139,36 @@ Logger dataLogger(LoggerID, loggingInterval, &varArray);
 EnviroDIYPublisher EnviroDIYPOST(dataLogger, &modem.gsmClient,
                                  registrationToken, samplingFeature);
 
+// == CALIBRATOR SETUP
+// ===================
+
+
+
+
+
+
+
+// interrupt called whenever there's data on the rx buffer
+void serialEvent() {
+    dataLogger.wakeISR();
+    // read bytes from the buffer
+    bytes_read = Serial.readBytesUntil('\r', rx_buffer, 32);
+    // the last byte read is the CR, remove it
+    rx_buffer[bytes_read] = 0;
+    serial_flag = true;
+}
+
 // === MAIN SETUP =============================================================
 // ============================================================================
+
+void poo(void);
+
 void setup() {
     // Start the serial connections
     Serial.begin(serialBaud);
     modemSerial.begin(modemBaud);
+    Wire.begin();
+
 
     // Set the timezones for the logger/data and the RTC
     Logger::setLoggerTimeZone(timeZone);
@@ -169,18 +211,46 @@ void setup() {
     dataLogger.systemSleep();
 }
 
+bool cal_mode = 0;
+uint8_t serial_handled = 0;
+
 // === MAIN LOOP ==============================================================
 // ============================================================================
 void loop() {
-    if (getBatteryVoltage(mcuBoard) < 3.4) {
-        dataLogger.systemSleep();
+
+    if (dataLogger.startTesting) {
+        if (!cal_mode) {
+            cal_mode = 1;
+            Serial.flush();
+            Serial.println("Entering cal mode!");
+            print_help();
+        }
     }
-    // At moderate voltage, log data but don't send it over the modem
-    else if (getBatteryVoltage(mcuBoard) < 3.55) {
-        dataLogger.logData();
+
+    // if serial_flag is set then data has been pulled from serial line and placed into rx_buffer
+    if (serial_flag == true) {
+
+        serial_handled = handle_serial(rx_buffer);
+
+        if(serial_handled == 0){
+            cal_mode = 0;
+            dataLogger.startTesting = 0;
+        }
+
+        serial_flag = false;
     }
-    // If the battery is good, send the data to the world
-    else {
-        dataLogger.logDataAndPublish();
+
+    if (!cal_mode) {
+        if (getBatteryVoltage(mcuBoard) < 3.4) {
+            dataLogger.systemSleep();
+        }
+        // At moderate voltage, log data but don't send it over the modem
+        else if (getBatteryVoltage(mcuBoard) < 3.55) {
+            dataLogger.logData();
+        }
+        // If the battery is good, send the data to the world
+        else {
+            dataLogger.logDataAndPublish();
+        }
     }
 }
