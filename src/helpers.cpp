@@ -8,6 +8,10 @@ void turn_on_shield(void){
     digitalWrite(PIN_REG_3V3, HIGH);
 }
 
+void turn_off_shield(void){
+    digitalWrite(PIN_REG_3V3, LOW);
+}
+
 void configure_logger(Logger &dataLogger, SIMComSIM7080 &modem) {
     dataLogger.attachModem(modem);
     dataLogger.setLoggerPins(PIN_WAKE, PIN_SD_SS, PIN_SD_PWR, PIN_BUTTON_DEBUG, PIN_LED_GREEN);

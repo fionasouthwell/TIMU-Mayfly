@@ -190,6 +190,7 @@ void setup() {
     }
 
     Serial.println(F("Putting processor to sleep\n"));
+    //turn_off_shield();
     dataLogger.systemSleep();
 }
 
@@ -201,6 +202,7 @@ void loop() {
     if (dataLogger.startTesting) {
         // first time in, set flag and print manual help message
         if (!manual_mode) {
+          //  turn_on_shield();
             manual_mode = 1;
             Serial.flush();
             Serial.println("Entering manual mode!");
@@ -214,6 +216,7 @@ void loop() {
         serialHandler.process_buffer(rx_buffer);
         // if ready to exit manual mode
         if(serialHandler.ready_to_exit()){
+          //  turn_off_shield();
             manual_mode = 0;
             dataLogger.startTesting = 0;
         }
@@ -228,6 +231,7 @@ void loop() {
         }
         // At moderate voltage, log data but don't send it over the modem
         else if (getBatteryVoltage(mcuBoard) < 3.55) {
+          //  turn_on_shield();
             dataLogger.logData();
         }
         // If the battery is good, send the data to the world
