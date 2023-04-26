@@ -60,12 +60,12 @@ Variable *rtcTemp = new MaximDS3231_Temp(&ds3231);
 
 // === Atlas Scientific RTD ===========
 // ====================================
-AtlasScientificRTD atlasRTD(-1);
+AtlasScientificRTD atlasRTD(PIN_REG_SWITCHED);
 Variable *atlasTemp = new AtlasScientificRTD_Temp(&atlasRTD);
 
 // === Atlas Scientific EC ============
 // ====================================
-AtlasScientificEC atlasEC(-1);
+AtlasScientificEC atlasEC(PIN_REG_SWITCHED);
 // Create four variable pointers for the EZO-ES
 Variable *atlasCond = new AtlasScientificEC_Cond(&atlasEC);
 Variable *atlasTDS = new AtlasScientificEC_TDS(&atlasEC);
@@ -74,12 +74,12 @@ Variable *atlasGrav = new AtlasScientificEC_SpecificGravity(&atlasEC);
 
 // === AtlasScientific pH =============
 // ====================================
-AtlasScientificpH atlaspH(-1);
+AtlasScientificpH atlaspH(PIN_REG_SWITCHED);
 Variable *atlaspHpH = new AtlasScientificpH_pH(&atlaspH);
 
 // === AtlasScientific DO =============
 // ====================================
-AtlasScientificDO atlasDO(-1);
+AtlasScientificDO atlasDO(PIN_REG_SWITCHED);
 Variable *atlasDOconc = new AtlasScientificDO_DOmgL(&atlasDO);
 Variable *atlasDOpct = new AtlasScientificDO_DOpct(&atlasDO);
 
