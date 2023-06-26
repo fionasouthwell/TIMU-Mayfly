@@ -13,6 +13,7 @@
 #include <TIMU-Mayfly.h>
 #include <UUIDs.h>
 #include <SerialHandler.h>
+#include <TIMU-Logger.h>
 
 // === DATA LOGGING OPTIONS ===================================================
 // ============================================================================
@@ -60,12 +61,12 @@ Variable *rtcTemp = new MaximDS3231_Temp(&ds3231);
 
 // === Atlas Scientific RTD ===========
 // ====================================
-AtlasScientificRTD atlasRTD(PIN_REG_SWITCHED);
+AtlasScientificRTD atlasRTD(-1);
 Variable *atlasTemp = new AtlasScientificRTD_Temp(&atlasRTD);
 
 // === Atlas Scientific EC ============
 // ====================================
-AtlasScientificEC atlasEC(PIN_REG_SWITCHED);
+AtlasScientificEC atlasEC(-1);
 // Create four variable pointers for the EZO-ES
 Variable *atlasCond = new AtlasScientificEC_Cond(&atlasEC);
 Variable *atlasTDS = new AtlasScientificEC_TDS(&atlasEC);
@@ -74,12 +75,12 @@ Variable *atlasGrav = new AtlasScientificEC_SpecificGravity(&atlasEC);
 
 // === AtlasScientific pH =============
 // ====================================
-AtlasScientificpH atlaspH(PIN_REG_SWITCHED);
+AtlasScientificpH atlaspH(-1);
 Variable *atlaspHpH = new AtlasScientificpH_pH(&atlaspH);
 
 // === AtlasScientific DO =============
 // ====================================
-AtlasScientificDO atlasDO(PIN_REG_SWITCHED);
+AtlasScientificDO atlasDO(-1);
 Variable *atlasDOconc = new AtlasScientificDO_DOmgL(&atlasDO);
 Variable *atlasDOpct = new AtlasScientificDO_DOpct(&atlasDO);
 
@@ -108,7 +109,11 @@ Variable *variableList[] = {
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
 VariableArray varArray(variableCount, variableList, UUIDs);
-Logger dataLogger(LoggerID, loggingInterval, &varArray);
+
+// Were using a modified version of Logger
+// The default Logger automatically puts in the mayfly to sleep
+// TIMU_Logger changes this
+TIMU_Logger dataLogger(LoggerID, loggingInterval, &varArray);
 
 // === DATA PUBLISHER SETUP ===================================================
 // ============================================================================
@@ -154,8 +159,8 @@ void setup() {
     Wire.begin();
 
     // Set the timezones for the logger/data and the RTC
-    Logger::setLoggerTimeZone(timeZone);
-    Logger::setRTCTimeZone(0);
+    TIMU_Logger::setLoggerTimeZone(timeZone);
+    TIMU_Logger::setRTCTimeZone(0);
 
     print_start_msg(sketchName, LoggerID);
     setup_leds();
