@@ -82,7 +82,7 @@ uint8_t SerialHandler::send_command() {
     Wire.endTransmission();
 
     // give the ezo time to process
-    delay(900);
+    delay(600);
 
     Wire.requestFrom(address, BUFFER_SIZE, 1);
 
