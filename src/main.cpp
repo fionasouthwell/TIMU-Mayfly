@@ -235,8 +235,9 @@ void loop() {
                 turn_on_shield();
 
                 // get the sensors ready for a reading
-                varArray.sensorsWake();
-                dataLogger.watchDogTimer.resetWatchDog();
+                // is this necessary??
+                // varArray.sensorsWake();
+                //dataLogger.watchDogTimer.resetWatchDog();
 
                 // take readings on all sensors
                 varArray.updateAllSensors();
