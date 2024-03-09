@@ -13,6 +13,7 @@
 #include <TIMU-Mayfly.h>
 #include <UUIDs.h>
 #include <SerialHandler.h>
+#include <TIMU-Logger.h>
 
 // === DATA LOGGING OPTIONS ===================================================
 // ============================================================================
@@ -108,7 +109,11 @@ Variable *variableList[] = {
 // Count up the number of pointers in the array
 int variableCount = sizeof(variableList) / sizeof(variableList[0]);
 VariableArray varArray(variableCount, variableList, UUIDs);
-Logger dataLogger(LoggerID, loggingInterval, &varArray);
+
+// Were using a modified version of Logger
+// The default Logger automatically puts in the mayfly to sleep
+// TIMU_Logger changes this
+TIMU_Logger dataLogger(LoggerID, loggingInterval, &varArray);
 
 // === DATA PUBLISHER SETUP ===================================================
 // ============================================================================
@@ -154,12 +159,12 @@ void setup() {
     Wire.begin();
 
     // Set the timezones for the logger/data and the RTC
-    Logger::setLoggerTimeZone(timeZone);
-    Logger::setRTCTimeZone(0);
+    TIMU_Logger::setLoggerTimeZone(timeZone);
+    TIMU_Logger::setRTCTimeZone(0);
 
     print_start_msg(sketchName, LoggerID);
     setup_leds();
-    turn_on_shield();
+   // turn_on_shield();
 
     // Attach the modem and information pins to the logger
     configure_logger(dataLogger, modem);

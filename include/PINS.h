@@ -8,7 +8,7 @@
 #define PIN_SD_PWR -1 
 #define PIN_SD_SS 12
 #define PIN_SENSOR_POWER 22
-#define PIN_REG_3V3 22
+#define PIN_REG_SWITCHED 22
 
 #define PIN_MODEM_PWR 18
 #define PIN_MODEM_STATUS 19

@@ -5,11 +5,11 @@
 #include <PINS.h>
 
 void turn_on_shield(void){
-    digitalWrite(PIN_REG_3V3, HIGH);
+    digitalWrite(PIN_REG_SWITCHED, HIGH);
 }
 
 void turn_off_shield(void){
-    digitalWrite(PIN_REG_3V3, LOW);
+    digitalWrite(PIN_REG_SWITCHED, LOW);
 }
 
 void configure_logger(Logger &dataLogger, SIMComSIM7080 &modem) {
