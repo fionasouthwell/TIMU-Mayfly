@@ -12,8 +12,6 @@
 #include <PINS.h>
 #include <TIMU-Mayfly.h>
 #include <UUIDs.h>
-#include <SerialHandler.h>
-#include <TIMU-Logger.h>
 
 // === DATA LOGGING OPTIONS ===================================================
 // ============================================================================
@@ -23,14 +21,14 @@ const char *LoggerID = "0001";
 // How frequently (in minutes) to log data
 const uint8_t loggingInterval = 5;
 // Your logger's timezone.
-const int8_t timeZone = -4;  // Eastern Standard Time
+const int8_t timeZone = -4; // Eastern Standard Time
 // NOTE:  Daylight savings time will not be applied!  Please use standard time!
 
 // === MODEM SETUP ============================================================
 // ============================================================================
 HardwareSerial &modemSerial = Serial1;
-const int32_t modemBaud = 9600;  //  SIM7080 does auto-bauding by default
-const char *apn = "hologram";    // The APN for the gprs connection
+const int32_t modemBaud = 9600; //  SIM7080 does auto-bauding by default
+const char *apn = "hologram";   // The APN for the gprs connection
 SIMComSIM7080 modem(&modemSerial, PIN_MODEM_PWR, PIN_MODEM_STATUS, PIN_MODEM_SLEEP_RQ, apn);
 
 // === SENSOR SETUP ===========================================================
@@ -112,8 +110,8 @@ VariableArray varArray(variableCount, variableList, UUIDs);
 
 // Were using a modified version of Logger
 // The default Logger automatically puts in the mayfly to sleep
-// TIMU_Logger changes this
-TIMU_Logger dataLogger(LoggerID, loggingInterval, &varArray);
+// Logger changes this
+Logger dataLogger(LoggerID, loggingInterval, &varArray);
 
 // === DATA PUBLISHER SETUP ===================================================
 // ============================================================================
@@ -126,51 +124,29 @@ TIMU_Logger dataLogger(LoggerID, loggingInterval, &varArray);
 EnviroDIYPublisher EnviroDIYPOST(dataLogger, &modem.gsmClient,
                                  registrationToken, samplingFeature);
 
-// == SERIAL / MANUAL MODE SETUP
-// ===================
-const int32_t serialBaud = 57600;
-char rx_buffer[32];
-uint8_t bytes_read = 0;
-bool serial_loaded = false; 
-bool manual_mode = 0; // flag set high when in manual mode
-SerialHandler serialHandler; // main serial handler
-
-// interrupt called whenever there's data on the rx buffer
-void serialEvent() {
-    dataLogger.wakeISR();
-    // read bytes from the buffer
-    bytes_read = Serial.readBytesUntil('\r', rx_buffer, 32);
-    // make everything lowercase
-    for(uint8_t i = 0; i <= bytes_read; i++){
-        rx_buffer[i] = tolower(rx_buffer[i]);
-    }
-    // the last byte read is the CR, remove it
-    rx_buffer[bytes_read] = 0;
-    serial_loaded = true;
-}
-
 // === MAIN SETUP =============================================================
 // ============================================================================
 
-void setup() {
+void setup()
+{
     // Start the serial connections
-    Serial.begin(serialBaud);
     modemSerial.begin(modemBaud);
     Wire.begin();
 
     // Set the timezones for the logger/data and the RTC
-    TIMU_Logger::setLoggerTimeZone(timeZone);
-    TIMU_Logger::setRTCTimeZone(0);
+    Logger::setLoggerTimeZone(timeZone);
+    Logger::setRTCTimeZone(0);
 
     print_start_msg(sketchName, LoggerID);
     setup_leds();
-   // turn_on_shield();
+    // turn_on_shield();
 
     // Attach the modem and information pins to the logger
     configure_logger(dataLogger, modem);
 
     // Set up the sensors, except at lowest battery level
-    if (getBatteryVoltage(mcuBoard) > 3.4) {
+    if (getBatteryVoltage(mcuBoard) > 3.4)
+    {
         Serial.println(F("Setting up sensors..."));
         varArray.setupSensors();
     }
@@ -178,7 +154,8 @@ void setup() {
     configure_modem(modem, modemBaud);
 
     // Sync the clock if it isn't valid or we have battery to spare
-    if (getBatteryVoltage(mcuBoard) > 3.55 || !dataLogger.isRTCSane()) {
+    if (getBatteryVoltage(mcuBoard) > 3.55 || !dataLogger.isRTCSane())
+    {
         // Synchronize the RTC with NIST
         // This will also set up the modem
         dataLogger.syncRTC();
@@ -187,61 +164,36 @@ void setup() {
     // Create the log file, adding the default header to it
     // Do this last so we have the best chance of getting the time correct and all sensor names correct
     // Writing to the SD card can be power intensive, so if we're skipping the sensor setup we'll skip this too.
-    if (getBatteryVoltage(mcuBoard) > 3.4) {
+    if (getBatteryVoltage(mcuBoard) > 3.4)
+    {
         Serial.println(F("Setting up file on SD card"));
-        dataLogger.turnOnSDcard(true);   // true = wait for card to settle after power up
-        dataLogger.createLogFile(true);  // true = write a new header
-        dataLogger.turnOffSDcard(true);  // true = wait for internal housekeeping after write
+        dataLogger.turnOnSDcard(true);  // true = wait for card to settle after power up
+        dataLogger.createLogFile(true); // true = write a new header
+        dataLogger.turnOffSDcard(true); // true = wait for internal housekeeping after write
     }
 
     Serial.println(F("Putting processor to sleep\n"));
-    //turn_off_shield();
+    // turn_off_shield();
     dataLogger.systemSleep();
 }
 
 // === MAIN LOOP ==============================================================
 // ============================================================================
-void loop() {
+void loop()
+{
 
-    // if button is pressed, put station into manual mode
-    if (dataLogger.startTesting) {
-        // first time in, set flag and print manual help message
-        if (!manual_mode) {
-          //  turn_on_shield();
-            manual_mode = 1;
-            Serial.flush();
-            Serial.println("Entering manual mode!");
-            serialHandler.print_help();
-        }
+    if (getBatteryVoltage(mcuBoard) < 3.4)
+    {
+        dataLogger.systemSleep();
     }
-
-    // if serial_loaded is set then data has been pulled from serial line and placed into rx_buffer
-    if (serial_loaded) {
-        // process the serial on the rx_buffer
-        serialHandler.process_buffer(rx_buffer);
-        // if ready to exit manual mode
-        if(serialHandler.ready_to_exit()){
-          //  turn_off_shield();
-            manual_mode = 0;
-            dataLogger.startTesting = 0;
-        }
-
-        serial_loaded = false;
+    // At moderate voltage, log data but don't send it over the modem
+    else if (getBatteryVoltage(mcuBoard) < 3.55)
+    {
+        dataLogger.logData();
     }
-
-    // if we aren't in manual mode, proceed as normal
-    if (!manual_mode) {
-        if (getBatteryVoltage(mcuBoard) < 3.4) {
-            dataLogger.systemSleep();
-        }
-        // At moderate voltage, log data but don't send it over the modem
-        else if (getBatteryVoltage(mcuBoard) < 3.55) {
-          //  turn_on_shield();
-            dataLogger.logData();
-        }
-        // If the battery is good, send the data to the world
-        else {
-            dataLogger.logDataAndPublish();
-        }
+    // If the battery is good, send the data to the world
+    else
+    {
+        dataLogger.logDataAndPublish();
     }
 }
