@@ -139,7 +139,7 @@ void setup()
 
     print_start_msg(sketchName, LoggerID);
     setup_leds();
-    // turn_on_shield();
+    turn_on_shield();
 
     // Attach the modem and information pins to the logger
     configure_logger(dataLogger, modem);
