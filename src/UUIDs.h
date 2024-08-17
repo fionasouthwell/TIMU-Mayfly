@@ -1,5 +1,4 @@
-#ifndef UUIDS_H
-#define UUIDS_H
+#pragma once
 
 #if STATION == 1
 const char *UUIDs[] =  // UUID array for device sensors
@@ -46,10 +45,6 @@ const char *UUIDs[] =                                                      // UU
 };
 const char *registrationToken = "5c9fc489-8a2f-41f5-8254-816253de8d8a";   // Device registration token
 const char *samplingFeature = "e352c3fd-4bb0-4864-9390-e33e960db357";     // Sampling feature UUID
-
-
-#endif
-
 
 
 #endif

@@ -1,5 +1,4 @@
-#ifndef PINS_H
-#define PINS_H
+#pragma once
 
 #define PIN_LED_GREEN 8
 #define PIN_LED_RED 9
@@ -14,5 +13,3 @@
 #define PIN_MODEM_STATUS 19
 #define PIN_MODEM_SLEEP_RQ 23
 #define PIN_MODEM_LED 9
-
-#endif

@@ -2,6 +2,8 @@
 // @bruthaearl (jake jones)
 // Send manual I2C commands to the EZOs via serial
 
+#pragma once
+
 #include <Arduino.h>
 #include <Wire.h>
 

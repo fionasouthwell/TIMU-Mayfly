@@ -1,5 +1,4 @@
-#ifndef TIMU_MAYFLY_H
-#define TIMU_MAYFLY_H
+#pragma once
 
 #include <Arduino.h>
 #include <EnableInterrupt.h>
@@ -22,4 +21,3 @@ void configure_modem(SIMComSIM7080 &modem, int32_t modemBaud);
 void print_start_msg(const char *sketchName, const char *LoggerID);
 void configure_logger(Logger &logger, SIMComSIM7080 &modem);
 void turn_on_shield(void);
-#endif
