@@ -54,7 +54,7 @@ namespace timu
         /**
          * @brief Called in main, whenever the processor reawakes
          */
-        auto work() -> void
+        auto log() -> void
         {
             const auto voltage = sensorIface_.getBatteryVoltage();
 
@@ -77,10 +77,11 @@ namespace timu
         }
 
       private:
-        // Interface for logger-related functionality
-
+        // Interface for sensor-related functionality
         SensorInterface sensorIface_;
+        // Interface for variable-related functionality
         VariableInterface variableIface_;
+        // Interface for logger-related functionality
         LoggerInterface loggerIface_;
 
         // Setup and turn on the LEDs
