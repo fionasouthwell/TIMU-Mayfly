@@ -1,27 +1,14 @@
 #pragma once
 
+#include "LoggerInterface/LoggerInterface.h"
+#include "SensorInterface/SensorInterface.h"
+#include "StationInterface/Config.h"
+#include "VariableInterface/VariableInterface.h"
+
 #include <ModularSensors.h>
 
-#include "LoggerInterface.h"
-#include "SensorInterface.h"
-#include "VariableInterface.h"
-
-namespace timu
+namespace timu::station_interface
 {
-    namespace config
-    {
-        // Battery sleep threshold, volts. Station will go back to sleep if the battery level is less than this
-        const auto SLEEP_THRESHOLD = 3.4F;
-        // Battery log threshold, volts. Station will only log to file if the battery level is between the sleep
-        // threshold and this
-        const auto LOG_THRESHOLD = 3.55F;
-
-        // Number of times to flash the LEDs on startup
-        const auto FLASH_COUNT = 4U;
-        // Flash rate
-        const auto FLASH_RATE = 75U;
-
-    } // namespace config
 
     class Station
     {
@@ -78,11 +65,11 @@ namespace timu
 
       private:
         // Interface for sensor-related functionality
-        SensorInterface sensorIface_;
+        sensor_interface::SensorInterface sensorIface_;
         // Interface for variable-related functionality
-        VariableInterface variableIface_;
+        variable_interface::VariableInterface variableIface_;
         // Interface for logger-related functionality
-        LoggerInterface loggerIface_;
+        logger_interface::LoggerInterface loggerIface_;
 
         // Setup and turn on the LEDs
         auto setupLEDs() -> void
@@ -107,4 +94,4 @@ namespace timu
         }
     };
 
-} // namespace timu
+} // namespace timu::station_interface

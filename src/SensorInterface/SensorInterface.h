@@ -2,6 +2,9 @@
 
 #include "Pins.h"
 
+#include "SensorInterface/Types.h"
+#include "SensorInterface/Config.h"
+
 #include <ModularSensors.h>
 #include <modems/SIMComSIM7080.h>
 #include <sensors/AtlasScientificDO.h>
@@ -11,39 +14,8 @@
 #include <sensors/MaximDS3231.h>
 #include <sensors/ProcessorStats.h>
 
-namespace timu
+namespace timu::sensor_interface
 {
-
-    namespace helpers
-    {
-        /**
-         * @brief Modem Network Mode
-         */
-        enum class NetworkMode : uint8_t
-        {
-            AUTOMATIC = 2,
-            GSM_ONLY = 13,
-            LTE_ONLY = 38,
-            GSM_AND_LTE = 51
-        };
-
-        /**
-         * @brief Modem Preferred Mode
-         */
-        enum class PreferredMode : uint8_t
-        {
-            CAT_M = 1,
-            NB_IOT = 2,
-            CAT_M_AND_NB_IOT = 3
-        };
-    } // namespace helpers
-
-    namespace detail
-    {
-        const auto NETWORK_MODE = helpers::NetworkMode::LTE_ONLY;
-        const auto PREFERRED_MODE = helpers::PreferredMode::CAT_M;
-        const auto MODEM_BAUD = 9600;
-    } // namespace detail
 
     class SensorInterface
     {
@@ -72,7 +44,7 @@ namespace timu
          */
         void startModemSerial()
         {
-            Serial1.begin(detail::MODEM_BAUD);
+            Serial1.begin(config::MODEM_BAUD);
         }
 
         /**
@@ -183,14 +155,14 @@ namespace timu
 
             Serial.println(F("Waking modem and setting Cellular Carrier Options..."));
             modem_.modemWake();
-            modem_.gsmModem.setBaud(detail::MODEM_BAUD);
+            modem_.gsmModem.setBaud(config::MODEM_BAUD);
 
-            const auto networkMode = static_cast<uint8_t>(detail::NETWORK_MODE);
+            const auto networkMode = static_cast<uint8_t>(config::NETWORK_MODE);
             modem_.gsmModem.setNetworkMode(networkMode);
 
-            const auto preferredMode = static_cast<uint8_t>(detail::PREFERRED_MODE);
+            const auto preferredMode = static_cast<uint8_t>(config::PREFERRED_MODE);
             modem_.gsmModem.setPreferredMode(preferredMode);
         }
     };
 
-} // namespace timu
+} // namespace timu::sensor_interface

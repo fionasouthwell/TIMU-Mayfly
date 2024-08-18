@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include <BoardInterface.h>
+#include <StationInterface/StationInterface.h>
 
 // Global Station object
-timu::Station mayflyStation{};
+timu::station_interface::Station mayflyStation{};
 
 void setup()
 {
@@ -14,4 +14,4 @@ void loop()
 {
     // Log data whenever the processor reawakes
     mayflyStation.log();
-}
+} 

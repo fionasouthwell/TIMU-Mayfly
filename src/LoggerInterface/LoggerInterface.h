@@ -1,23 +1,14 @@
 #pragma once
 
-#include "SensorInterface.h"
-#include "UUIDs.h"
-#include "VariableInterface.h"
+#include "LoggerInterface/Config.h"
+#include "SensorInterface/SensorInterface.h"
+#include "VariableInterface/VariableInterface.h"
 
 #include <ModularSensors.h>
 #include <publishers/EnviroDIYPublisher.h>
 
-namespace timu
+namespace timu::logger_interface
 {
-
-    namespace detail
-    {
-        // Terminal baud rate
-        const auto TERMINAL_BAUD = 57600UL;
-        // Time zone. -4 = eastern
-        const auto TIME_ZONE = -4;
-    } // namespace detail
-
     /**
      * @brief Interface for logger-related functions
      */
@@ -28,49 +19,28 @@ namespace timu
         /**
          * @brief Logger interface constructor
          */
-        LoggerInterface(SensorInterface& sensorInterface, VariableInterface& variableInterface)
-            : sensorIface_{sensorInterface},
-              variableIface_{variableInterface},
-              dataLogger_{station::STATION_ID, station::LOGGING_INTERVAL, &variableIface_.getList()},
-              publisher_{dataLogger_, &sensorIface_.getModem().gsmClient, uuids::TOKEN, uuids::SAMPLING_FEATURE}
-        {
-        }
+        LoggerInterface(sensor_interface::SensorInterface& sensorInterface,
+                        variable_interface::VariableInterface& variableInterface);
 
         /**
          * @brief Start the terminal serial
          */
-        auto startTerminalSerial() -> void
-        {
-            Serial.begin(detail::TERMINAL_BAUD);
-        }
+        auto startTerminalSerial() -> void;
 
         /**
          * @brief Setup the logger
          */
-        auto setup() -> void
-        {
-            setupLogger();
-            syncClock();
-            createLogFile();
-        }
-
+        auto setup() -> void;
 
         /**
          * @brief Put the logger to sleep
          */
-        auto sleep() -> void
-        {
-            Serial.println(F("Putting processor to sleep\n"));
-            dataLogger_.systemSleep();
-        }
+        auto sleep() -> void;
 
         /**
          * @brief Log data to the SD card
          */
-        auto log() -> void
-        {
-            dataLogger_.logData();
-        }
+        auto log() -> void;
 
         /**
          * @brief Log data to the SD card and publish to MMW
@@ -82,9 +52,9 @@ namespace timu
 
       private:
         // Sensor interface
-        timu::SensorInterface& sensorIface_;
+        sensor_interface::SensorInterface& sensorIface_;
         // Variable interface
-        timu::VariableInterface& variableIface_;
+        variable_interface::VariableInterface& variableIface_;
 
         // The data logger
         Logger dataLogger_;
@@ -96,7 +66,7 @@ namespace timu
          */
         auto setupLogger() -> void
         {
-            Logger::setLoggerTimeZone(detail::TIME_ZONE);
+            Logger::setLoggerTimeZone(config::TIME_ZONE);
             Logger::setRTCTimeZone(0);
 
             dataLogger_.attachModem(sensorIface_.getModem());
@@ -130,4 +100,4 @@ namespace timu
         }
     };
 
-} // namespace timu
+} // namespace timu::logger_interface

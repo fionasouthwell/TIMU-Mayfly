@@ -1,7 +1,9 @@
 #pragma once
 
-#include "SensorInterface.h"
-#include "UUIDs.h"
+
+#include "SensorInterface/SensorInterface.h"
+
+#include <UUIDs.h>
 
 #include <ModularSensors.h>
 #include <modems/SIMComSIM7080.h>
@@ -12,7 +14,7 @@
 #include <sensors/MaximDS3231.h>
 #include <sensors/ProcessorStats.h>
 
-namespace timu
+namespace timu::variable_interface
 {
     /**
      * @brief Interface to the sensor variable
@@ -25,7 +27,7 @@ namespace timu
          * @note constructs the variables with the UUIDS provided in UUIDs.h
          * @param sensorIface Sensor Interface
          */
-        explicit VariableInterface(timu::SensorInterface& sensorIface)
+        explicit VariableInterface(timu::sensor_interface::SensorInterface& sensorIface)
             : statsSampleNo_{&sensorIface.getStats(), uuids::SEQUENCE_NUMBER},
               statsRam_{&sensorIface.getStats(), uuids::FREE_SRAM},
               statsBattery_{&sensorIface.getStats(), uuids::BATTERY_VOLTAGE},
@@ -89,4 +91,4 @@ namespace timu
         VariableArray variableArray_{SENSOR_COUNT, list_};
     };
 
-} // namespace timu
+} // namespace timu::variable_interface
