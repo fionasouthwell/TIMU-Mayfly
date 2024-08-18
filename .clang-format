@@ -1,0 +1,12 @@
+Language: Cpp
+Standard: c++17
+
+BreakBeforeBraces: Allman
+ColumnLimit: 120
+IndentWidth: 4
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+PackConstructorInitializers: Never
+PointerAlignment: Left
+SeparateDefinitionBlocks: Always
+UseTab: Never

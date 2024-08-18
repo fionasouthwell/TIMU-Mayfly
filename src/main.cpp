@@ -1,11 +1,8 @@
 #include <Arduino.h>
+#include <BoardInterface.h>
 
-void setup()
-{
+timu::Station mayflyStation{};
 
-}
+void setup() { mayflyStation.setup(); }
 
-void loop()
-{
-    
-}
+void loop() { mayflyStation.work(); }
