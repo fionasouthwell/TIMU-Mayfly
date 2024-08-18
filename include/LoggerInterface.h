@@ -28,12 +28,20 @@ namespace timu
         /**
          * @brief Logger interface constructor
          */
-        LoggerInterface()
-            : sensorIface_{},
-              variableIface_{sensorIface_},
+        LoggerInterface(SensorInterface& sensorInterface, VariableInterface& variableInterface)
+            : sensorIface_{sensorInterface},
+              variableIface_{variableInterface},
               dataLogger_{station::STATION_ID, station::LOGGING_INTERVAL, &variableIface_.getList()},
               publisher_{dataLogger_, &sensorIface_.getModem().gsmClient, uuids::TOKEN, uuids::SAMPLING_FEATURE}
         {
+        }
+
+        /**
+         * @brief Start the terminal serial
+         */
+        auto startTerminalSerial() -> void
+        {
+            Serial.begin(detail::TERMINAL_BAUD);
         }
 
         /**
@@ -41,32 +49,11 @@ namespace timu
          */
         auto setup() -> void
         {
-            startTerminalSerial();
-            sensorIface_.startModemSerial();
-
             setupLogger();
-            sensorIface_.setupModem();
-
             syncClock();
             createLogFile();
         }
 
-        /**
-         * @brief Get the battery voltage
-         * @return float battery voltage
-         */
-        auto getBatteryVoltage() -> float
-        {
-            const auto& voltage = sensorIface_.getStats().sensorValues[0];
-
-            // Update the reading if the last one was bad
-            if (voltage == -9999.0F)
-            {
-                sensorIface_.getStats().update();
-            }
-
-            return voltage;
-        }
 
         /**
          * @brief Put the logger to sleep
@@ -95,22 +82,14 @@ namespace timu
 
       private:
         // Sensor interface
-        timu::SensorInterface sensorIface_;
+        timu::SensorInterface& sensorIface_;
         // Variable interface
-        timu::VariableInterface variableIface_;
+        timu::VariableInterface& variableIface_;
 
         // The data logger
         Logger dataLogger_;
         // Data publisher
         EnviroDIYPublisher publisher_;
-
-        /**
-         * @brief Start the terminal serial
-         */
-        auto startTerminalSerial() -> void
-        {
-            Serial.begin(detail::TERMINAL_BAUD);
-        }
 
         /**
          * @brief Setup the logger
@@ -130,7 +109,7 @@ namespace timu
          */
         auto syncClock() -> void
         {
-            if (getBatteryVoltage() > 3.55 || !dataLogger_.isRTCSane())
+            if (sensorIface_.getBatteryVoltage() > 3.55 || !dataLogger_.isRTCSane())
             {
                 dataLogger_.syncRTC();
             }
@@ -141,7 +120,7 @@ namespace timu
          */
         auto createLogFile() -> void
         {
-            if (getBatteryVoltage() > 3.4)
+            if (sensorIface_.getBatteryVoltage() > 3.4)
             {
                 Serial.println(F("Setting up file on SD card"));
                 dataLogger_.turnOnSDcard(true);  // true = wait for card to settle after power up

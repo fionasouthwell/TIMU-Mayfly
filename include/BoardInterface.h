@@ -3,6 +3,8 @@
 #include <ModularSensors.h>
 
 #include "LoggerInterface.h"
+#include "SensorInterface.h"
+#include "VariableInterface.h"
 
 namespace timu
 {
@@ -29,7 +31,9 @@ namespace timu
          * @brief Station constructor
          */
         Station()
-            : loggerIface_{}
+            : sensorIface_{},
+              variableIface_{sensorIface_},
+              loggerIface_{sensorIface_, variableIface_}
         {
         }
 
@@ -39,6 +43,11 @@ namespace timu
         auto setup() -> void
         {
             setupLEDs();
+
+            sensorIface_.startModemSerial();
+            loggerIface_.startTerminalSerial();
+
+            sensorIface_.setup();
             loggerIface_.setup();
         }
 
@@ -47,7 +56,7 @@ namespace timu
          */
         auto work() -> void
         {
-            const auto voltage = loggerIface_.getBatteryVoltage();
+            const auto voltage = sensorIface_.getBatteryVoltage();
 
             // If battery is low, just sleep
             if (voltage < config::SLEEP_THRESHOLD)
@@ -69,6 +78,9 @@ namespace timu
 
       private:
         // Interface for logger-related functionality
+
+        SensorInterface sensorIface_;
+        VariableInterface variableIface_;
         LoggerInterface loggerIface_;
 
         // Setup and turn on the LEDs

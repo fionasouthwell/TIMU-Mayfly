@@ -62,24 +62,9 @@ namespace timu
         {
         }
 
-        /**
-         * @brief Setup the modem
-         */
-        void setupModem()
+        auto setup() -> void
         {
-            modem_.setModemLED(pins::LED_MODEM);
-            modem_.setModemWakeLevel(HIGH);
-            modem_.setModemResetLevel(HIGH);
-
-            Serial.println(F("Waking modem and setting Cellular Carrier Options..."));
-            modem_.modemWake();
-            modem_.gsmModem.setBaud(detail::MODEM_BAUD);
-
-            const auto networkMode = static_cast<uint8_t>(detail::NETWORK_MODE);
-            modem_.gsmModem.setNetworkMode(networkMode);
-
-            const auto preferredMode = static_cast<uint8_t>(detail::PREFERRED_MODE);
-            modem_.gsmModem.setPreferredMode(preferredMode);
+            setupModem();
         }
 
         /**
@@ -88,6 +73,23 @@ namespace timu
         void startModemSerial()
         {
             Serial1.begin(detail::MODEM_BAUD);
+        }
+
+        /**
+         * @brief Get the battery voltage
+         * @return float battery voltage
+         */
+        auto getBatteryVoltage() -> float
+        {
+            const auto& voltage = stats_.sensorValues[0];
+
+            // Update the reading if the last one was bad
+            if (voltage == -9999.0F)
+            {
+                stats_.update();
+            }
+
+            return voltage;
         }
 
         /**
@@ -169,6 +171,26 @@ namespace timu
         ProcessorStats stats_;
         // Real-Time Clock sensor
         MaximDS3231 rtc_;
+
+        /**
+         * @brief Setup the modem
+         */
+        void setupModem()
+        {
+            modem_.setModemLED(pins::LED_MODEM);
+            modem_.setModemWakeLevel(HIGH);
+            modem_.setModemResetLevel(HIGH);
+
+            Serial.println(F("Waking modem and setting Cellular Carrier Options..."));
+            modem_.modemWake();
+            modem_.gsmModem.setBaud(detail::MODEM_BAUD);
+
+            const auto networkMode = static_cast<uint8_t>(detail::NETWORK_MODE);
+            modem_.gsmModem.setNetworkMode(networkMode);
+
+            const auto preferredMode = static_cast<uint8_t>(detail::PREFERRED_MODE);
+            modem_.gsmModem.setPreferredMode(preferredMode);
+        }
     };
 
 } // namespace timu
