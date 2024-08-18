@@ -12,14 +12,22 @@ namespace timu
 
     namespace detail
     {
+        // Terminal baud rate
         const auto TERMINAL_BAUD = 57600UL;
+        // Time zone. -4 = eastern
         const auto TIME_ZONE = -4;
     } // namespace detail
 
+    /**
+     * @brief Interface for logger-related functions
+     */
     class LoggerInterface
     {
 
       public:
+        /**
+         * @brief Logger interface constructor
+         */
         LoggerInterface()
             : sensorIface_{},
               variableIface_{sensorIface_},
@@ -28,6 +36,9 @@ namespace timu
         {
         }
 
+        /**
+         * @brief Setup the logger
+         */
         auto setup() -> void
         {
             startTerminalSerial();
@@ -40,10 +51,15 @@ namespace timu
             createLogFile();
         }
 
+        /**
+         * @brief Get the battery voltage
+         * @return float battery voltage
+         */
         auto getBatteryVoltage() -> float
         {
             const auto& voltage = sensorIface_.getStats().sensorValues[0];
 
+            // Update the reading if the last one was bad
             if (voltage == -9999.0F)
             {
                 sensorIface_.getStats().update();
@@ -52,31 +68,53 @@ namespace timu
             return voltage;
         }
 
+        /**
+         * @brief Put the logger to sleep
+         */
         auto sleep() -> void
         {
             Serial.println(F("Putting processor to sleep\n"));
             dataLogger_.systemSleep();
         }
 
+        /**
+         * @brief Log data to the SD card
+         */
         auto log() -> void
         {
             dataLogger_.logData();
         }
 
+        /**
+         * @brief Log data to the SD card and publish to MMW
+         */
         auto logAndPublish() -> void
         {
             dataLogger_.logDataAndPublish();
         }
 
       private:
+        // Sensor interface
         timu::SensorInterface sensorIface_;
+        // Variable interface
         timu::VariableInterface variableIface_;
 
+        // The data logger
         Logger dataLogger_;
+        // Data publisher
         EnviroDIYPublisher publisher_;
 
-        auto startTerminalSerial() -> void { Serial.begin(detail::TERMINAL_BAUD); }
+        /**
+         * @brief Start the terminal serial
+         */
+        auto startTerminalSerial() -> void
+        {
+            Serial.begin(detail::TERMINAL_BAUD);
+        }
 
+        /**
+         * @brief Setup the logger
+         */
         auto setupLogger() -> void
         {
             Logger::setLoggerTimeZone(detail::TIME_ZONE);
@@ -87,6 +125,9 @@ namespace timu
             dataLogger_.begin();
         }
 
+        /**
+         * @brief Sync the clock if we have enough juice
+         */
         auto syncClock() -> void
         {
             if (getBatteryVoltage() > 3.55 || !dataLogger_.isRTCSane())
@@ -95,6 +136,9 @@ namespace timu
             }
         }
 
+        /**
+         * @brief Create the log file if we have enough juice
+         */
         auto createLogFile() -> void
         {
             if (getBatteryVoltage() > 3.4)

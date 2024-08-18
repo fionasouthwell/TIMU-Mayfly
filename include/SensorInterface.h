@@ -16,6 +16,9 @@ namespace timu
 
     namespace helpers
     {
+        /**
+         * @brief Modem Network Mode
+         */
         enum class NetworkMode : uint8_t
         {
             AUTOMATIC = 2,
@@ -24,13 +27,16 @@ namespace timu
             GSM_AND_LTE = 51
         };
 
+        /**
+         * @brief Modem Preferred Mode
+         */
         enum class PreferredMode : uint8_t
         {
             CAT_M = 1,
             NB_IOT = 2,
             CAT_M_AND_NB_IOT = 3
         };
-    }
+    } // namespace helpers
 
     namespace detail
     {
@@ -42,22 +48,23 @@ namespace timu
     class SensorInterface
     {
       public:
-        SensorInterface() {}
+        /**
+         * @brief Sensor Interface constructor
+         */
+        SensorInterface()
+            : atlasDO_{pins::ALWAYS_POWERED},
+              atlasEC_{pins::ALWAYS_POWERED},
+              atlasPH_{pins::ALWAYS_POWERED},
+              atlasRTD_{pins::ALWAYS_POWERED},
+              modem_{&Serial1, pins::MODEM_POWER, pins::MODEM_STATUS, pins::MODEM_SLEEP_RQ, "hologram"},
+              stats_{"v1.0"},
+              rtc_{}
+        {
+        }
 
-        auto getDO() -> AtlasScientificDO& { return atlasDO_; }
-
-        auto getEC() -> AtlasScientificEC& { return atlasEC_; }
-
-        auto getPH() -> AtlasScientificpH& { return atlasPH_; }
-
-        auto getRTD() -> AtlasScientificRTD& { return atlasRTD_; }
-
-        auto getModem() -> SIMComSIM7080& { return modem_; }
-
-        auto getStats() -> ProcessorStats& { return stats_; }
-
-        auto getRTC() -> MaximDS3231& { return rtc_; }
-
+        /**
+         * @brief Setup the modem
+         */
         void setupModem()
         {
             modem_.setModemLED(pins::LED_MODEM);
@@ -65,29 +72,103 @@ namespace timu
             modem_.setModemResetLevel(HIGH);
 
             Serial.println(F("Waking modem and setting Cellular Carrier Options..."));
-            modem_.modemWake();                          // NOTE:  This will also set up the modem
-            modem_.gsmModem.setBaud(detail::MODEM_BAUD); // Make sure we're *NOT* auto-bauding!
+            modem_.modemWake();
+            modem_.gsmModem.setBaud(detail::MODEM_BAUD);
 
             const auto networkMode = static_cast<uint8_t>(detail::NETWORK_MODE);
-            modem_.gsmModem.setNetworkMode(networkMode); 
+            modem_.gsmModem.setNetworkMode(networkMode);
 
             const auto preferredMode = static_cast<uint8_t>(detail::PREFERRED_MODE);
-            modem_.gsmModem.setPreferredMode(preferredMode);        
+            modem_.gsmModem.setPreferredMode(preferredMode);
         }
 
+        /**
+         * @brief Start the modem serial
+         */
         void startModemSerial()
         {
             Serial1.begin(detail::MODEM_BAUD);
         }
 
+        /**
+         * @brief Get a reference to the AtlasDO sensor
+         * @return AtlasScientificDO&
+         */
+        auto getDO() -> AtlasScientificDO&
+        {
+            return atlasDO_;
+        }
+
+        /**
+         * @brief Get a reference to the AtlasEC sensor
+         * @return AtlasScientificEC&
+         */
+        auto getEC() -> AtlasScientificEC&
+        {
+            return atlasEC_;
+        }
+
+        /**
+         * @brief Get a reference to the Atlas pH sensor
+         * @return AtlasScientificpH&
+         */
+        auto getPH() -> AtlasScientificpH&
+        {
+            return atlasPH_;
+        }
+
+        /**
+         * @brief Get a reference to the Atlas RTD sensor
+         *
+         * @return AtlasScientificRTD&
+         */
+        auto getRTD() -> AtlasScientificRTD&
+        {
+            return atlasRTD_;
+        }
+
+        /**
+         * @brief Get a reference to the Modem sensor
+         * @return SIMComSIM7080&
+         */
+        auto getModem() -> SIMComSIM7080&
+        {
+            return modem_;
+        }
+
+        /**
+         * @brief Get a reference to the Processor sensor
+         * @return ProcessorStats&
+         */
+        auto getStats() -> ProcessorStats&
+        {
+            return stats_;
+        }
+
+        /**
+         * @brief Get a reference to the Real-Time Clock sensor
+         * @return MaximDS3231&
+         */
+        auto getRTC() -> MaximDS3231&
+        {
+            return rtc_;
+        }
+
       private:
-        AtlasScientificDO atlasDO_{pins::ALWAYS_POWERED};
-        AtlasScientificEC atlasEC_{pins::ALWAYS_POWERED};
-        AtlasScientificpH atlasPH_{pins::ALWAYS_POWERED};
-        AtlasScientificRTD atlasRTD_{pins::ALWAYS_POWERED};
-        SIMComSIM7080 modem_{&Serial1, pins::MODEM_POWER, pins::MODEM_STATUS, pins::MODEM_SLEEP_RQ, "hologram"};
-        ProcessorStats stats_{"v1.0"};
-        MaximDS3231 rtc_{};
+        // Atlas DO sensor
+        AtlasScientificDO atlasDO_;
+        // Atlas EC sensor
+        AtlasScientificEC atlasEC_;
+        // Atlas pH sensor
+        AtlasScientificpH atlasPH_;
+        // Atlas RTD sensor
+        AtlasScientificRTD atlasRTD_;
+        // Modem sensor
+        SIMComSIM7080 modem_;
+        // Processor sensor
+        ProcessorStats stats_;
+        // Real-Time Clock sensor
+        MaximDS3231 rtc_;
     };
 
 } // namespace timu
