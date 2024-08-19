@@ -20,27 +20,48 @@ namespace timu::logger_interface
          * @brief Logger interface constructor
          */
         LoggerInterface(sensor_interface::SensorInterface& sensorInterface,
-                        variable_interface::VariableInterface& variableInterface);
+                        variable_interface::VariableInterface& variableInterface)
+            : sensorIface_{sensorInterface},
+              variableIface_{variableInterface},
+              dataLogger_{station::STATION_ID, station::LOGGING_INTERVAL, &variableIface_.getList()},
+              publisher_{dataLogger_, &sensorIface_.getModem().gsmClient, uuids::TOKEN, uuids::SAMPLING_FEATURE}
+        {
+        }
 
         /**
          * @brief Start the terminal serial
          */
-        auto startTerminalSerial() -> void;
+        auto startTerminalSerial() -> void
+        {
+            Serial.begin(config::TERMINAL_BAUD);
+        }
 
         /**
          * @brief Setup the logger
          */
-        auto setup() -> void;
+        auto setup() -> void
+        {
+            setupLogger();
+            syncClock();
+            createLogFile();
+        }
 
         /**
          * @brief Put the logger to sleep
          */
-        auto sleep() -> void;
+        auto sleep() -> void
+        {
+            Serial.println(F("Putting processor to sleep\n"));
+            dataLogger_.systemSleep();
+        }
 
         /**
          * @brief Log data to the SD card
          */
-        auto log() -> void;
+        auto log() -> void
+        {
+            dataLogger_.logData();
+        }
 
         /**
          * @brief Log data to the SD card and publish to MMW

@@ -3,7 +3,7 @@
 
 #include "SensorInterface/SensorInterface.h"
 
-#include <UUIDs.h>
+#include <StationConfig.h>
 
 #include <ModularSensors.h>
 #include <modems/SIMComSIM7080.h>

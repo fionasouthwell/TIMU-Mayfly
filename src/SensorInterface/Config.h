@@ -4,7 +4,7 @@
 
 namespace timu::sensor_interface::config
 {
-    const auto NETWORK_MODE = types::NetworkMode::LTE_ONLY;
-    const auto PREFERRED_MODE = types::PreferredMode::CAT_M;
-    const auto MODEM_BAUD = 9600;
+   inline const auto NETWORK_MODE = types::NetworkMode::LTE_ONLY;
+   inline const auto PREFERRED_MODE = types::PreferredMode::CAT_M;
+   inline const auto MODEM_BAUD = 9600;
 } // namespace timu::sensor_interface::config
